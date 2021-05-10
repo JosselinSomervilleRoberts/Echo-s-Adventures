@@ -1,0 +1,3 @@
+- screen_render : affiche le quadrangle dans lequel la scene est imprimée (utile pour l'effet de filtrage notamment)
+- skybox : affiche le fond (skybox)
+- mesh_lights : gère l'affichage des objets avec les lumières

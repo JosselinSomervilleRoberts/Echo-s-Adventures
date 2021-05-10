@@ -1,0 +1,14 @@
+# Blender MTL File: 'None'
+# Material Count: 1
+
+newmtl 14_-_Bark
+Ns 177.284763
+Ka 1.000000 1.000000 1.000000
+Kd 0.588235 0.588235 0.588235
+Ks 0.880000 0.880000 0.880000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Bump -bm 1.030000 C:\\Users\\josse\\Downloads\\3D Assests\\Trees\\Tree001\\tree_bark_normal.tga
+map_Kd C:\\Users\\josse\\Downloads\\3D Assests\\Foliage\\SourceAssets\\Trees\\Textures\\tree_bark_diffuse.tga

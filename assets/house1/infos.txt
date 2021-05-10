@@ -1,0 +1,8 @@
+MODEL
+- rotate = 90, 0, 0
+- scale = 10
+
+
+SUBMODEL
+- name = house
+- specular = 0

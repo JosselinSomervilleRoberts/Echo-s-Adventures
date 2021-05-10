@@ -1,0 +1,6 @@
+MODEL
+- scale = 0.5
+
+SUBMODEL
+- name = rock
+- specular = 0.5

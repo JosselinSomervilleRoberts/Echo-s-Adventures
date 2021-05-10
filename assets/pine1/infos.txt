@@ -1,0 +1,11 @@
+MODEL
+- scale = 1
+- rotate = 90, 0, 0
+
+SUBMODEL
+- name = trunk
+- specular = 0.1
+
+SUBMODEL
+- name = leaves
+- specular = 0.3

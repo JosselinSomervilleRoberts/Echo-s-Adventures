@@ -1,0 +1,15 @@
+# Blender MTL File: 'None'
+# Material Count: 1
+
+newmtl 15_-_Default
+Ns 18.000005
+Ka 1.000000 1.000000 1.000000
+Kd 0.996078 0.992157 0.992157
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Bump -bm 0.750000 C:\\Users\\josse\\Downloads\\3D Assests\\Trees\\Tree001\\Twig Normal.tga
+map_Kd C:\\Users\\josse\\Downloads\\3D Assests\\Trees\\Tree001\\Twig Base Material.psd
+map_d C:\\Users\\josse\\Downloads\\3D Assests\\Trees\\Tree001\\Twig Opacity Map.jpg
