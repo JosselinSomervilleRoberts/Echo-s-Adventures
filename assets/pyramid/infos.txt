@@ -1,0 +1,7 @@
+MODEL
+-rotate 90, 0, 0
+- scale 5
+
+SUBMODEL
+- name = pyramid
+- specular = 0.5

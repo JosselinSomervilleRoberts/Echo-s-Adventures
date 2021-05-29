@@ -3,4 +3,4 @@ MODEL
 - scale 0.5
 
 SUBMODEL
-- name = duck_low_poly
+- name = duck

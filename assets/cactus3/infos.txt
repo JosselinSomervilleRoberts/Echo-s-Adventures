@@ -1,0 +1,6 @@
+MODEL
+-rotate 90, 0, 0
+
+SUBMODEL
+- name = cactus
+- specular = 0

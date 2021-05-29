@@ -1,173 +1,154 @@
 #include "loup.hpp"
 
+using namespace vcl;
 
 Loup::Loup() : AffichableUpdatable() {
+	t = 0;
+	u = { 0,0.25,0.5,0.75 };
+	angleDirection = 0;
+	vitesse = 1;
+	avancer = false;
+	periode = 0.8f;
+	gauche = false;
+	droite = false;
+	scaleBase = 0.1;
+	scale = 0.18;
 	calcul_shape();
 }
 
 
 void Loup::calcul_shape() {
-	// Parameters
-	int N = 20;
+	GLuint const shader_mesh = 3;// opengl_create_shader_program(read_text_file("shader/loup.vert.glsl"), read_text_file("shader/loup.frag.glsl"));
+	std::cout << shader_mesh << std::endl;
 
-	float r_eyes = 0.085f;
-	float r_head = 0.45f;
-	float angle_oreille = vcl::pi / 4.0f;
-	float angle_oreille2 = vcl::pi / 4.0f;
-	float h_oreille = r_head / 2.0f;
+	std::string nameFile = "assets/loup/Wolf.png";
+	GLuint texture_loup = vcl::opengl_texture_to_gpu(vcl::image_load_png(nameFile), GL_MIRRORED_REPEAT  /**GL_TEXTURE_WRAP_S*/, GL_MIRRORED_REPEAT  /**GL_TEXTURE_WRAP_T*/);
 
-	float x_body = 1.6f;
-	float y_body = 0.8f;
-	float z_body = 0.6f;
+	mesh_drawable corps = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/corps.obj"), shader_mesh);
+	//corps.transform.scale = 0.01;
+	hierarchy.add(corps, "corps");
+	float h = 3.95f;
 
-	float l1_leg = 0.6f;
-	float r1_leg = 0.2f;
-	float l2_leg = 0.6f;
-	float r2_leg = 0.2f;
-	float r_articulation = 0.25f;
-	float r_articulation2 = 0.15f;
+	std::string position[] = { "d", "g" };
+	for (int i = 0; i < 2; i++) {
+		mesh_drawable pard1 = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/patte_ar_" + position[i] + "_1.obj"), shader_mesh);
+		mesh_drawable pard2 = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/patte_ar_" + position[i] + "_2.obj"), shader_mesh);
+		mesh_drawable pard3 = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/patte_ar_" + position[i] + "_3.obj"), shader_mesh);
+		hierarchy.add(pard1, "patte_ar_" + position[i] + "_1", "corps", -scale * vcl::vec3(0.75 - 1.5 * i, -1.4, h - 4.0f));
+		hierarchy.add(pard2, "patte_ar_" + position[i] + "_2", "patte_ar_" + position[i] + "_1", -scale * vcl::vec3(0.75, -1.5, h - 2.5) + scale * vcl::vec3(0.75, -1.4, h - 4.0f));
+		hierarchy.add(pard3, "patte_ar_" + position[i] + "_3", "patte_ar_" + position[i] + "_2", -scale * vcl::vec3(0.75, -2.1, h - 1.5) + scale * vcl::vec3(0.75, -1.5, h - 2.5));
 
-	float ecartement_pattes_x = 0.7 * x_body;
-	float ecartement_pattes_y = 0.75 * y_body;
-
-
-	// Geometry of the eyes: black spheres
-	vcl::vec3 couleur = vcl::vec3(0.6f, 0.4f, 0.28f);
-	vcl::mesh eye_m = vcl::mesh_primitive_sphere(r_eyes, { 0,0,0 }, N, N);
-	eye_m.color.fill({ 0.1, 0.1, 0.1 });
-	vcl::mesh_drawable eye = vcl::mesh_drawable(eye_m);
-	vcl::mesh body_m = vcl::mesh_primitive_ellipsoid(vcl::vec3{ x_body, y_body, z_body }, { 0,0,0 }, 4 * N, N);
-	body_m.color.fill(couleur);
-	vcl::mesh_drawable body = vcl::mesh_drawable(body_m);
-
-	vcl::mesh phal1_m = vcl::mesh_primitive_ellipsoid(vcl::vec3{ l1_leg, r1_leg, r1_leg }, { 0,0,0 }, N, (int)(N / 2.0f));
-	phal1_m.color.fill(couleur);
-	vcl::mesh_drawable phal1 = vcl::mesh_drawable(phal1_m);
-	vcl::mesh phal2_m = vcl::mesh_primitive_ellipsoid(vcl::vec3{ l2_leg, r2_leg, r2_leg }, { 0,0,0 }, N, (int)(N / 2.0f));
-	phal2_m.color.fill(couleur);
-	vcl::mesh_drawable phal2 = vcl::mesh_drawable(phal2_m);
-	vcl::mesh articulation_m = vcl::mesh_primitive_sphere(r_articulation, { 0,0,0 }, 2 * N, N);
-	articulation_m.color.fill(couleur);
-	vcl::mesh_drawable articulation = vcl::mesh_drawable(articulation_m);
-	vcl::mesh articulation2_m = vcl::mesh_primitive_sphere(r_articulation2, { 0,0,0 }, 2 * N, N);
-	articulation2_m.color.fill(couleur);
-	vcl::mesh_drawable articulation2 = vcl::mesh_drawable(articulation2_m);
-
-
-	vcl::mesh head_m = vcl::mesh_primitive_sphere(r_head, { 0,0,0 }, 2 * N, N);
-	head_m.color.fill(couleur);
-	vcl::mesh_drawable head = vcl::mesh_drawable(head_m);
-	vcl::mesh museau_m = vcl::mesh_primitive_ellipsoid(vcl::vec3{ 1.3f*r_head, r_head/1.4f, r_head/1.7f }, { 0,0,0 }, N, (int)(N / 2.0f));
-	museau_m.color.fill(couleur);
-	vcl::mesh_drawable museau = vcl::mesh_drawable(museau_m);
-	r_head = r_head / 2.0f;
-	vcl::vec3 p1 = vcl::vec3(0.0f, r_head * sin(angle_oreille), r_head * cos(angle_oreille));
-	vcl::mesh oreille1_m = vcl::mesh_primitive_triangle(p1, vcl::vec3(0.0f, r_head * sin(angle_oreille+angle_oreille2), r_head * cos(angle_oreille+angle_oreille2)), vcl::vec3(0.0f, (r_head+h_oreille) * sin(angle_oreille+angle_oreille2/2.0f), (r_head + h_oreille) * cos(angle_oreille + angle_oreille2 / 2.0f)));
-	oreille1_m.color.fill(couleur);
-	vcl::mesh_drawable oreille1 = vcl::mesh_drawable(oreille1_m);
-
-	hierarchy.add(body, "body");
-	hierarchy.add(head, "head", "body", vcl::vec3(x_body + 0.4f*r_head, 0, 0));
-	hierarchy.add(museau, "museau", "head", vcl::vec3(r_head*0.5f, 0, -r_head*0.2f));
-	hierarchy.add(eye, "eye_left", "head", r_head * vcl::vec3(0.63f, -1 / 3.0f, 1 / 2.1f));
-	hierarchy.add(eye, "eye_right", "head", r_head * vcl::vec3(0.63f, 1 / 3.0f, 1 / 2.1f));
-	hierarchy.add(oreille1, "oreille1", "head", r_head * vcl::vec3(0.63f, 1 / 3.0f, 1 / 2.1f));
-
-	// Eyes positions are set with respect to some ratio of the body
-	for (int x = 0; x < 2; x++) {
-		for (int y = 0; y < 2; y++) {
-			std::string name = std::to_string(x) + "_" + std::to_string(y);
-			hierarchy.add(articulation, "leg_" +  name, "body", vcl::vec3((2.0f*x - 1.0f)*ecartement_pattes_x, (2.0f*y - 1.0f)*ecartement_pattes_y, 0));
-			hierarchy.add(phal1, "phal1_" + name, "leg_" + name, vcl::vec3(3*l1_leg / 4.0f, 0, 0));
-			hierarchy.add(articulation2, "articulation1_" + name, "phal1_" + name, vcl::vec3(l1_leg, 0, 0));
-			hierarchy.add(phal2, "phal2_" + name, "articulation1_" + name, vcl::vec3(3*l2_leg / 4.0f, 0, 0));
-		}
+		mesh_drawable pavd1 = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/patte_av_" + position[i] + "_1.obj"), shader_mesh);
+		mesh_drawable pavd2 = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/patte_av_" + position[i] + "_2.obj"), shader_mesh);
+		mesh_drawable pavd3 = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/patte_av_" + position[i] + "_3.obj"), shader_mesh);
+		hierarchy.add(pavd1, "patte_av_" + position[i] + "_1", "corps", -scale * vcl::vec3(0.75 - 1.5 * i, 1.35, h - 3.9));
+		hierarchy.add(pavd2, "patte_av_" + position[i] + "_2", "patte_av_" + position[i] + "_1", -scale * vcl::vec3(0.75, 1.14, h - 2.6) + scale * vcl::vec3(0.75, 1.35, h - 3.9));
+		hierarchy.add(pavd3, "patte_av_" + position[i] + "_3", "patte_av_" + position[i] + "_2", -scale * vcl::vec3(0.75, 1.18, h - 1.3) + scale * vcl::vec3(0.75, 1.14, h - 2.6));
 	}
-	
-	/*
-	hierarchy.add(aile, "aile_1_left", "body", vcl::vec3(0, 0.65 * y_body, 0.3 * z_body));
-	hierarchy.add(aile2, "aile_2_left", "aile_1_left", vcl::vec3(0, p_aile1, 0));
-	hierarchy.add(aile, "aile_1_right", "body", vcl::vec3(0, -0.65 * y_body, 0.3 * z_body));
-	hierarchy.add(aile2, "aile_2_right", "aile_1_right", vcl::vec3(0, p_aile1, 0));
 
-	hierarchy.add(head, "head", "body", vcl::vec3(0.85 * x_body + r_head, 0., 0.4 * z_body));
-	hierarchy.add(eye, "eye_left", "head", r_head * vcl::vec3(0.55, -1 / 3.0f, 1 / 2.0f));
-	hierarchy.add(eye, "eye_right", "head", r_head * vcl::vec3(0.55, 1 / 3.0f, 1 / 2.0f));
 
-	// Set the left part of the body arm: shoulder-elbow-arm
-	hierarchy.add(bec, "bec", "head", vcl::vec3(sqrt(r_head * r_head - r_bec * r_bec) - 0.001, 0, 0));
-	*/
+	mesh_drawable queue1 = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/queue_1.obj"), shader_mesh);
+	mesh_drawable queue2 = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/queue_2.obj"), shader_mesh);
+	mesh_drawable queue3 = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/queue_3.obj"), shader_mesh);
+	mesh_drawable queue4 = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/queue_4.obj"), shader_mesh);
+	mesh_drawable queue5 = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/queue_5.obj"), shader_mesh);
+	hierarchy.add(queue1, "queue_1", "corps", -scale * vcl::vec3(0, -1.7, h - 4.2));
+	hierarchy.add(queue2, "queue_2", "queue_1", -scale * vcl::vec3(0, 2.2 - 3.73, 0));
+	hierarchy.add(queue3, "queue_3", "queue_2", -scale * vcl::vec3(0, 3.73 - 4.8, 0));
+	hierarchy.add(queue4, "queue_4", "queue_3", -scale * vcl::vec3(0, 4.8 - 5.8, 0));
+	hierarchy.add(queue5, "queue_5", "queue_4", -scale * vcl::vec3(0, 5.4 - 6.2, 0));
 
-	orientation = vcl::vec3(1, 0, 0);
+
+	mesh_drawable cou1 = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/cou_1.obj"), shader_mesh);
+	mesh_drawable cou2 = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/cou_2.obj"), shader_mesh);
+	mesh_drawable tete = mesh_drawable(vcl::mesh_load_file_obj("assets/loup/tete.obj"), shader_mesh);
+	hierarchy.add(cou1, "cou_1", "corps", -scale * vcl::vec3(0, 2.5, h - 4.8));
+	hierarchy.add(cou2, "cou_2", "cou_1", -scale * vcl::vec3(0, 3.1 - 2.5, 4.8 - 5.0));
+	hierarchy.add(tete, "tete", "cou_2", -scale * vcl::vec3(0, 2.8 - 3.1, 5.0 - 4.9));
+
+	for (int i = 0; i < hierarchy.elements.size(); i++) {
+		hierarchy.elements.at(i).element.texture = texture_loup;
+		hierarchy.elements.at(i).element.transform.scale = 0.1 * scale;
+	}
+
+	key_angles.push_back({ 0, -0.85, -1.3, -0.7, 0 });
+	key_angles.push_back({ 0, 1.1, 1.3, 0.4, 0 });
+	key_angles.push_back({ 0, 0.8, 1.9, 0.6, 0 });
+
+	key_angles.push_back({ 0, -0.6, -1, -0.6, 0 });
+	key_angles.push_back({ 0, 1, 1, 0.2, 0 });
+	key_angles.push_back({ 0, 0, 0.4, 0.2, 0 });
+
+	key_angles.push_back({ 0, -0.85, -1.3, -0.7, 0 });
+	key_angles.push_back({ 0, 1.1, 1.3, 0.4, 0 });
+	key_angles.push_back({ 0, 0.8, 1.9, 0.6, 0 });
+
+	key_angles.push_back({ 0, -0.6, -1, -0.6, 0 });
+	key_angles.push_back({ 0, 1, 1, 0.2, 0 });
+	key_angles.push_back({ 0, 0, 0.4, 0.2, 0 });
+
+
+	key_times = { 0,0.2,0.4,0.6, 1 };
+
+	hierarchy["corps"].transform.translate = vec3(0, 0, 10);
 }
 
-float mouv(float t) {
-	t -= int(t);
-	if (t < 0.5)
-		return sin(2 * vcl::pi * t);
-	else
-		return 0;
-}
 
 
 float Loup::calcul_update(float dt) {
+	return calcul_update(dt, true);
+}
+
+float Loup::calcul_update(float dt, bool peutAvancer) {
 	// Compute the interpolated position
 	t += dt;
-	//if (t > key_times[key_times.size() - 1]) t -= key_times[key_times.size() - 1];
 
-	std::vector<vcl::vec3> result_interpol = { vcl::vec3(0, 0, 20), vcl::vec3(0,0,0) };// interpolationPosTime(t, key_positions, key_times);
-	vcl::vec3 const p = result_interpol[0];
-	vcl::vec3 orient = result_interpol[1];
-	//orientation = orient;
-	float pourcent = 2.5f * dt;
-	orientation = (1 - pourcent) * orientation + pourcent * orient;
-	orientation = normalize(orientation);
+	periode = 0.8f / vitesse;
+	std::string name[] = { "av_d", "ar_g", "av_g", "ar_d" };
+	int nb_mouvements = 0;
 
-	// Params
-	float r_mouv_tete = 0.2f;
-	float r_mouv_aile_1 = 0.5f;
-	float r_mouv_aile_2 = 0.8f;
-
-	float f_battement = 4;
-	float montee = 0.05f;
-	// Positionnement du corps
-	hierarchy["body"].transform.translate = p - vcl::vec3({ 0,0, 0});
-	hierarchy["body"].transform.scale = 0.5;
-
-	/*
-	vcl::vec3 orientation_verticale;
-
-	if (std::abs(orientation[1]) > std::abs(orientation[0])) {
-		orientation_verticale = { 0, -orientation[2] / orientation[1], 1 };
-	}
-	else {
-		orientation_verticale = { -orientation[2] / orientation[0], 0, 1 };
-	}
-	orientation_verticale = normalize(orientation_verticale);
-
-	vcl::rotation r = rotation_between_vector({ 1,0,0 }, { 0, 0, 1 }, orientation, orientation_verticale);
-	hierarchy["body"].transform.rotate = r;
-
-	// Mouvement des autres éléments
-	hierarchy["head"].transform.rotate = vcl::rotation({ 0,1,0 }, r_mouv_tete * std::sin(2 * 3.14f * (t - 0.4f)));
-	hierarchy["aile_1_left"].transform.rotate = vcl::rotation({ 1,0,0 }, r_mouv_aile_1 * std::sin(f_battement * 2 * 3.14f * (t - 0.4f)));
-	hierarchy["aile_2_left"].transform.rotate = vcl::rotation({ 1,0,0 }, r_mouv_aile_2 * std::sin(f_battement * 2 * 3.14f * (t - 0.4f)));
-	hierarchy["aile_1_right"].transform.rotate = vcl::rotation({ 1,0,0 }, 3.14f - r_mouv_aile_1 * std::sin(f_battement * 2 * 3.14f * (t - 0.4f)));
-	hierarchy["aile_2_right"].transform.rotate = vcl::rotation({ 1,0,0 }, -r_mouv_aile_2 * std::sin(f_battement * 2 * 3.14f * (t - 0.4f)));*/
-
-	for (int x = 0; x < 2; x++) {
-		for (int y = 0; y < 2; y++) {
-			std::string name = std::to_string(x) + "_" + std::to_string(y);
-			float decalage = 0;
-			if (x == 1 && y == 1) decalage = 0.25;
-			if (x == 0 && y == 1) decalage = 0.5;
-			if (x == 1 && y == 0) decalage = 0.75;
-			hierarchy["leg_" + name].transform.rotate = vcl::rotation(vcl::vec3(0, 1, 0), (4*vcl::pi/8.0f)  + (vcl::pi/3.0f) * mouv(0.3*t+ decalage));
-			hierarchy["articulation1_" + name].transform.rotate = vcl::rotation(vcl::vec3(0, 1, 0), - vcl::pi / 4.0f - (vcl::pi / 3.0f) * mouv(0.3*t + decalage));
+	for (int i = 0; i < 4; i++) {
+		if (!(avancer) && (u[i] < 0.01)) {
+			u[i] = 0;
 		}
+		else {
+			nb_mouvements++;
+			float prev_u = u[i];
+			if (u[i] < 0.6)
+				u[i] += (2 - avancer) * dt * (1 - 0.5 * (cos(vcl::pi * u[i] * 10))) / periode;
+			else
+				u[i] += (2 - avancer) * dt / periode;
+
+			while (u[i] > 1) u[i] -= 1;
+			if (!(avancer) && (prev_u > 0.75) && (u[i] < 0.25)) u[i] = 0;
+			if (u[i] < 0) u[i] = 0;
+			//if (!(avancer) && (i==0) && (prev_u > 0.9) && (u[i] >= 0)) u[0] = 0;
+			//std::cout << u << std::endl;
+		}
+		hierarchy["patte_" + name[i] + "_1"].transform.rotate = rotation(vec3(1, 0, 0), interpolationPosTime(u[i], key_angles[3 * i + 0], key_times)[0]);
+		hierarchy["patte_" + name[i] + "_2"].transform.rotate = rotation(vec3(1, 0, 0), interpolationPosTime(u[i], key_angles[3 * i + 1], key_times)[0]);
+		hierarchy["patte_" + name[i] + "_3"].transform.rotate = rotation(vec3(1, 0, 0), interpolationPosTime(u[i], key_angles[3 * i + 2], key_times)[0]);
 	}
 
-	hierarchy.update_local_to_global_coordinates();
+	if (gauche)
+		angleDirection -= dt * (3 - 1.5 * (nb_mouvements > 0)) * 180 / vcl::pi;
+	else if (droite)
+		angleDirection += dt * (3 - 1.5 * (nb_mouvements > 0)) * 180 / vcl::pi;
+
+
+	float v = u[0];
+	while (v > 0.25) v -= 0.25;
+	if(peutAvancer) hierarchy["corps"].transform.translate += -vitesse * nb_mouvements * (1 + 2.5 * avancer) * 60 * scale * dt * (0.005 + 0.03 * (0.25 - v) / 0.25) * vec3(std::sin(angleDirection * vcl::pi / 180.0f), std::cos(angleDirection * vcl::pi / 180.0f), 0);
+	//hierarchy["corps"].transform.rotate = rotation(vcl::vec3(0, 0, 1), -angleDirection * vcl::pi / 180.0f);
+
+	hierarchy["cou_1"].transform.rotate = rotation(vec3(0, 0, 1), 0.1 * std::cos(t));
+	hierarchy["cou_2"].transform.rotate = rotation(vec3(0, 0, 1), 0.1 * std::cos(t));
+	hierarchy["tete"].transform.rotate = rotation(vec3(0, 0, 1), 0.1 * std::cos(t));
+
+	for (int i = 1; i <= 5; i++) {
+		hierarchy["queue_" + std::to_string(i)].transform.rotate = rotation(vec3(1, 0, 0), -0.1 + 0.1 * std::cos(t));
+	}
+	//hierarchy.update_local_to_global_coordinates();
 	return 1;
 }
 

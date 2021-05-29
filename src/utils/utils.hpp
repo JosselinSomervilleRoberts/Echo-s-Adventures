@@ -79,7 +79,7 @@ inline void opengl_uniform(GLuint shader, scene_environment const& current_scene
 	opengl_uniform(shader, "projection", current_scene.projection);
 	opengl_uniform(shader, "view", current_scene.camera.matrix_view());
 
-    if ((int)(shader) == 3) {
+    if (((int)(shader) == 3) || ((int)(shader) == 15)) {
         // Adapt the uniform values send to the shader
         int const N_spotlight = current_scene.spotlight_color.size();
         GLint const location_color = glGetUniformLocation(shader, "spotlight_color");
@@ -89,8 +89,13 @@ inline void opengl_uniform(GLuint shader, scene_environment const& current_scene
 
         /** Note: Here we use the raw OpenGL call to glUniform3fv allowing us to pass a vector of data (here an array of 5 positions and 5 colors) */
 
-        opengl_uniform(shader, "spotlight_falloff", current_scene.spotlight_falloff);
+        GLint const location_falloff = glGetUniformLocation(shader, "spotlight_falloff");
+        glUniform1fv(location_falloff, N_spotlight, ptr(current_scene.spotlight_falloff[0]));
+        GLint const location_intensity = glGetUniformLocation(shader, "spotlight_intensity");
+        glUniform1fv(location_intensity, N_spotlight, ptr(current_scene.spotlight_intensity[0]));
+        //glUniform3fv(shader, "spotlight_falloff", ptr(current_scene.spotlight_falloff[0]));
         opengl_uniform(shader, "fog_falloff", current_scene.fog_falloff);
+        opengl_uniform(shader, "N_lights", current_scene.N_lights);
     }
     else {
         opengl_uniform(shader, "light", current_scene.spotlight_position[0], false);

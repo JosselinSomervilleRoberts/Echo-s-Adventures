@@ -1,0 +1,10 @@
+MODEL
+- rotate 90, 0, 0
+
+SUBMODEL
+- name = pierres
+- specular = 0.5
+
+SUBMODEL
+- name = buches
+- specular = 0

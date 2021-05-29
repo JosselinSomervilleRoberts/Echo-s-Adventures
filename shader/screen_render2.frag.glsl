@@ -27,22 +27,22 @@ void main()
 {
 	if(filter==true) {
 		vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
-		for(int i = 0; i < 9; i++) {
-			color += kernel[i] * texture(image_texture, uv_frag+offset[i] );
-		}
-		if((color[0] < 0.01) && (color[1] < 0.01) && (color[2] < 0.01)) {
-			discard;
+			for(int i = 0; i < 9; i++) {
+				color += kernel[i] * texture(image_texture, uv_frag+offset[i] );
 			}
-		else {
-			FragColor = abs(color);
-		}
+			if((color[0] < 0.01) && (color[1] < 0.01) && (color[2] < 0.01)) {
+				discard;
+				}
+			else {
+				FragColor = abs(color);
+			}
 	}
 	else {
 		vec4 color = texture(image_texture, uv_frag);
 		if(color[3] < 0.5) {
 			discard;
 		}
-		else if((color[0] > 0.99) && (color[1] > 0.99) && (color[2] > 0.99)) {
+		else if((color[0] > 0.999) && (color[1] > 0.999) && (color[2] > 0.999)) {
 			discard;
 			}
 		else {

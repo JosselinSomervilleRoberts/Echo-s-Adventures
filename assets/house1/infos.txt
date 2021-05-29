@@ -1,8 +1,8 @@
 MODEL
 - rotate = 90, 0, 0
-- scale = 10
+- scale = 15
 
 
 SUBMODEL
 - name = house
-- specular = 0
+- specular = 0.2

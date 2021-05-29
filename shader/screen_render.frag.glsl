@@ -38,17 +38,23 @@ void main()
 		}
 	}
 	else {
+		if((texture(image_texture, uv_frag)[0] > 0.99) && (texture(image_texture, uv_frag)[1] > 0.99) && (texture(image_texture, uv_frag)[2] > 0.99)) {
+			discard;
+		}
+		else {
 		vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
 		for(int i = 0; i < 9; i++) {
 			color += kernel[i] * texture(image_texture, uv_frag+offset[i] );
 		}
-		FragColor = abs(color);
+		float attenuation = 0.4f;
+		FragColor = vec4(abs(attenuation*color[0]), abs(attenuation*color[1]), abs(attenuation*color[2]), abs(color[3]));
+		}
 		/*
 		vec4 color = texture(image_texture, uv_frag);
 		if(color[3] < 0.5) {
 			discard;
 		}
-		else if((color[0] > 0.99) && (color[1] > 0.99) && (color[2] > 0.99)) {
+		else if((color[0] > 0.999) && (color[1] > 0.999) && (color[2] > 0.999)) {
 			discard;
 			}
 		else {

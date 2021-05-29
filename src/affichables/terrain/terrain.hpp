@@ -39,23 +39,34 @@ class Terrain : public Affichable {
 		size_t N;
 		std::map<chunkPos, Chunk> chunks;
 		std::map<std::string, ObjModel*> objects;
-		float distMaxRender = 30.0;
+		float distMaxRender = 20.0;
 		std::vector<chunkPos> toBeLoaded;
 
+
 	public:
+		bool eyesActivated = false;
+		vcl::vec3 posLoup;
+
 		Terrain();
 		Terrain(float chunkSize_, size_t N_);
 		Terrain(float chunkSize_, size_t N_, TextureLoader* textureLoader_);
 		void newChunk(int x, int y);
 		void calcul_shape();
 		void afficher(scene_environment& scene);
+		void afficher(scene_environment& scene, float distMin, float distMax);
 		void afficher_depth_map(scene_environment& scene);
 		void afficher_with_shadow(scene_environment& scene);
 		void load_model(std::string modelName);
 		void load_models();
 
 		float get_heightOfTerrain(float x, float y);
+		std::vector<vcl::vec3> get_posOnTerrain(float x, float y);
 		void initiateChunks();
+
+		vcl::vec3 get_nearestPierre(vcl::vec3 pos_);
+		bool has_pierre(vcl::vec3 pos_);
+
+		void update(float dt);
 };
 
 

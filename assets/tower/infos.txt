@@ -1,0 +1,7 @@
+MODEL
+- rotate 90, 0, 0
+- scale 0.5
+
+SUBMODEL
+- name = tower
+- specular = 0

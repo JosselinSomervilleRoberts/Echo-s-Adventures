@@ -29,8 +29,8 @@ void Oiseau::calcul_shape() {
 	vcl::mesh eye_m = vcl::mesh_primitive_sphere(r_eyes, { 0,0,0 }, N, N);
 	eye_m.color.fill({ 0.1, 0.1, 0.1 });
 	vcl::mesh_drawable eye = vcl::mesh_drawable(eye_m);
-	vcl::mesh_drawable head = vcl::mesh_drawable(vcl::mesh_primitive_sphere(r_head, { 0,0,0 }, 2 * N, N));
-	vcl::mesh_drawable body = vcl::mesh_drawable(vcl::mesh_primitive_ellipsoid(vcl::vec3{ x_body, y_body, z_body }, { 0,0,0 }, 4 * N, N));
+	vcl::mesh_drawable head = vcl::mesh_drawable(vcl::mesh_primitive_sphere(r_head, { 0,0,0 }, 2 * N, N), 3);
+	vcl::mesh_drawable body = vcl::mesh_drawable(vcl::mesh_primitive_ellipsoid(vcl::vec3{ x_body, y_body, z_body }, { 0,0,0 }, 4 * N, N), 3);
 	vcl::mesh bec_m = vcl::mesh_primitive_cone(r_bec, l_bec, { 0,0,0 }, { 1 ,0,0 }, true, 2 * N, N);
 	bec_m.color.fill({ 1.0, 0.5, 0.15 });
 	vcl::mesh_drawable bec = vcl::mesh_drawable(bec_m);
@@ -64,7 +64,8 @@ void Oiseau::calcul_shape() {
 float Oiseau::calcul_update(float dt) {
 	// Compute the interpolated position
 	t += dt;
-	if (t > key_times[key_times.size() - 1]) t -= key_times[key_times.size() - 1];
+	if (t > key_times[key_times.size() - 1]) t = 0;// t -= key_times[key_times.size() - 1];
+	while (t < 0) t += key_times[key_times.size() - 1];
 
 	std::vector<vcl::vec3> result_interpol = interpolationPosTime(t, key_positions, key_times);
 	vcl::vec3 const p = result_interpol[0];
@@ -104,6 +105,7 @@ float Oiseau::calcul_update(float dt) {
 	hierarchy["aile_2_left"].transform.rotate = vcl::rotation({ 1,0,0 }, r_mouv_aile_2 * std::sin(f_battement * 2 * 3.14f * (t - 0.4f)));
 	hierarchy["aile_1_right"].transform.rotate = vcl::rotation({ 1,0,0 }, 3.14f - r_mouv_aile_1 * std::sin(f_battement * 2 * 3.14f * (t - 0.4f)));
 	hierarchy["aile_2_right"].transform.rotate = vcl::rotation({ 1,0,0 }, -r_mouv_aile_2 * std::sin(f_battement * 2 * 3.14f * (t - 0.4f)));
+	//for(int i=0; i<hierarchy.elements.size(); i++)
 	hierarchy.update_local_to_global_coordinates();
 	return 1;
 }

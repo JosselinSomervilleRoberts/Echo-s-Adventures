@@ -1,0 +1,7 @@
+MODEL
+- rotate = 90,0,0
+- scale = 1.2
+- specular = 0.5
+
+SUBMODEL
+- name = light
